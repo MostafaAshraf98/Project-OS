@@ -1,0 +1,20 @@
+priority queue (SJF) & (HPF) & (SRTN) & (FCFS) the priority
+Circular array
+---------------------------------------------------------
+. benebtedi fel process generator
+. bene2ra el input file w ne3melo save f array of processes (struct of processes with data members - arrival time - running time ...)
+. benshouf el arguments 3alashan neshouf anhy algorithm haneshta8al bih
+. based 3ala el algorithm han-create el corresponding data structure
+. bencreate a clck using forking of parent (mesh me7taga if coniditon l nafsaha heya bete5als ma3 el parent)
+. bencreate scheduler using forking of process generator and create a message queue for communication between them
+. create an iterator on the array
+. bashouf el arriving time of the next process in the array
+. law el arriving time of this process is equal or less than the clock count using getclck() send message to the scheduler than a process has arrived and send its information using the message queue
+. awel ma el scheduler receives the message haye3mel fork lel process da w a7ott fel data structure eli corresponding lel algorithm eli sha8al 3aleih
+. lazem asta5dem el file of process.c gowa el fork of the process
+. set the remaining time in the process.c as the running time as initial value
+. me7tagin tari2a 3alshan n -communicate bein el scheduler wel processes fa hanesta5dem shared memory eli hane3melaha create ma3 kol process
+. fel shared memory ben7ott kol el infos eli mawgouda fel PCB w no3od ne3adel fiha tool ma el process is in the scheduler
+. delwa2ti el process of scheduling beye7sol ezay:
+. 3andi DS w eli 3ala el wesh howa eli ha3melo running .. yeb2a kol el processes el tania di hateb2a fel ready
+. 
