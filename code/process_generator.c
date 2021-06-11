@@ -62,7 +62,47 @@ int main(int argc, char *argv[])
     
 
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
+    int Algorithm = atoi(argv[2]);
+    if (Algorithm < 1 || Algorithm > 5)
+    {
+        printf("error \n");
+    }
+    int Quantum = 0;
+    if (Algorithm == 5)
+        Quantum = atoi(argv[3]);
+  
+    switch (Algorithm)
+    {
+    case 1:  printf(" Scheduled Algorithm is First Come First Serve (FCFS)\n");
+         break;
+    case 2:  printf("Scheduled Algorithm isShortest Job First (SJF)\n");
+        break;
+    case 3: printf("Scheduled Algorithm is Preemptive Highest Priority First (HPF) \n");
+        break;
+    case 4: printf("Scheduled Algorithm isShortest Remaining \n");
+        break;
+    case 5:  printf("Scheduled Algorithm is Round Robin\n");
+        break;
+    }
+    
     // 3. Initiate and create the scheduler and clock processes.
+    
+    int clk_Pid = fork();
+    if (clk_Pid == -1)
+        return -1;
+    else if (clk_processId == 0)
+    {
+        //clock
+    }
+
+    int scheduler_Pid = fork();
+    if (scheduler_Pid == -1)
+        return -1;
+    else if (scheduler_Pid == 0)
+    {
+        //scheduler
+    }
+    
     // 4. Use this function after creating the clock process to initialize clock.
     initClk();
     // To get time use this function. 
