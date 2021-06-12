@@ -32,6 +32,20 @@ typedef struct node
    struct node *next;
 } Node;
 
+typedef struct PriorityQueue
+{
+   Node *head;
+   int count;
+} PriorityQueue;
+
+PriorityQueue *newPriorityQueue()
+{
+   PriorityQueue *temp = (PriorityQueue *)malloc((sizeof(PriorityQueue)));
+   (temp->head) = NULL;
+   temp->count = 0;
+   return temp;
+}
+
 Node *newNode(process p)
 {
    Node *temp = (Node *)malloc(sizeof(Node));
@@ -41,46 +55,50 @@ Node *newNode(process p)
 }
 
 // Function to check the queue is empty
-int isEmpty(Node **head)
+int isEmpty(PriorityQueue **q)
 {
-   return (*head) == NULL;
+   return (*q)->head == NULL;
 }
 
-process front(Node **head)
+process front(PriorityQueue **q)
 {
-   if (isEmpty(head))
+   if (isEmpty(q))
    {
       process p;
       return p;
    }
-   return (*head)->p;
+   return ((*q)->head->p);
 }
 
-process dequeue(Node **head)
+process dequeue(PriorityQueue (**q))
 {
-   if (isEmpty(head))
+   if (isEmpty(q))
    {
       process p;
       return p;
    }
-   Node *temp = *head;
-   (*head) = (*head)->next;
+   Node *temp = ((*q)->head);
+   ((*q)->head) = ((*q)->head)->next;
    temp->p.state = "running";
    process returnedProcess = temp->p;
    free(temp);
    return returnedProcess;
 }
 
-void enqueue(Node **head, process p)
+void enqueue(PriorityQueue **q, process p)
 {
-   if (isEmpty(head))
-      return;
-   Node *start = (*head);
-   Node *temp = newNode(p);
-   if ((*head)->p.priority > p.priority)
+   if (isEmpty(q))
    {
-      temp->next = *head;
-      (*head) = temp;
+      Node *temp = newNode(p);
+      ((*q)->head) = temp;
+      return;
+   }
+   Node *start = ((*q)->head);
+   Node *temp = newNode(p);
+   if (((*q)->head)->p.priority > p.priority)
+   {
+      temp->next = ((*q)->head);
+      ((*q)->head) = temp;
    }
    else
    {
@@ -96,11 +114,11 @@ void enqueue(Node **head, process p)
    }
 }
 
-void incrementWaintingTime(Node **head)
+void incrementWaintingTime(PriorityQueue **q)
 {
-   if (isEmpty(head))
+   if (isEmpty(q))
       return;
-   Node *start = (*head);
+   Node *start = ((*q)->head);
    start->p.WaitingTime++;
    while (start->next != NULL)
    {
@@ -109,11 +127,11 @@ void incrementWaintingTime(Node **head)
    }
 }
 
-void printQueue(Node **head)
+void printQueue(PriorityQueue **q)
 {
-   if (isEmpty(head))
+   if (isEmpty(q))
       return;
-   Node *start = (*head);
+   Node *start = ((*q)->head);
    printProcess(start->p);
    while (start->next != NULL)
    {
@@ -124,11 +142,10 @@ void printQueue(Node **head)
 
 // int main()
 // {
-
 //    process p1;
 //    p1.state = "running";
 //    p1.id = 1;
-//    p1.priority=1;
+//    p1.priority = 1;
 //    p1.arrivalTime = 1;
 //    p1.executionTime = 2;
 //    p1.remainingTime = 3;
@@ -137,7 +154,7 @@ void printQueue(Node **head)
 
 //    process p2;
 //    p2.state = "ready";
-//    p2.priority=2;
+//    p2.priority = 2;
 //    p2.id = 2;
 //    p2.arrivalTime = 10;
 //    p2.executionTime = 21;
@@ -147,7 +164,7 @@ void printQueue(Node **head)
 
 //    process p3;
 //    p3.state = "ready";
-//    p3.priority=0;
+//    p3.priority = 0;
 //    p3.id = 3;
 //    p3.arrivalTime = 11;
 //    p3.executionTime = 24;
@@ -155,13 +172,12 @@ void printQueue(Node **head)
 //    p3.runTime = 12;
 //    p3.WaitingTime = 64;
 
-//    Node *pq = newNode(p1); // creating the priority queue
-//    enqueue(&pq, p2);       // creates inside it the new node and links it to the first node
+//    PriorityQueue *pq = newPriorityQueue();
+//    enqueue(&pq, p1);
+//    enqueue(&pq, p2);
 //    enqueue(&pq, p3);
 //    printQueue(&pq);
 //    incrementWaintingTime(&pq);
 //    printQueue(&pq);
-//    // printProcess(dequeue(&pq));
-
 //    return 0;
 // }

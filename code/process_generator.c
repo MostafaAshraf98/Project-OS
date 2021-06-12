@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     int clk_Pid = fork();
     if (clk_Pid == -1)
         return -1;
-    else if (clk_processId == 0)
+    else if (clk_Pid == 0)
     {
         //clock
     }
