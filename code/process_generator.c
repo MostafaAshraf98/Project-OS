@@ -3,15 +3,6 @@
 
 void clearResources(int);
 
-struct Processes
-{
-    int ID;
-    int arrivalTime;
-    int runningTime;
-    int priority;
-};
-
-typedef struct Processes Processes;     //to declare Process without writing struct
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +27,7 @@ int main(int argc, char *argv[])
     }
 
     //inputFileId is the number of process
-    Processes fileProcesses[inputFileID];
+    process fileProcesses[inputFileID];
     int fileProcessesCount = 0;
 
     fclose(inputFile);  //Closes the inputFile
@@ -45,23 +36,26 @@ int main(int argc, char *argv[])
 
     inputFile = fopen("processes.txt", "r");    //Opens file with parameters (path, reading only)
 
-    inputFile = fopen("processes.txt", "r");    //Opens file with parameters (path, reading only)
     fgets(buff,255,inputFile);  //This reads the first line "#id arrival runtime priority" which is not important
     while ( fscanf( inputFile, "%d\t%d\t%d\t%d\n", &inputFileID, &inputFileArrTime, &inputFileRunTime, &inputFilePriority) != EOF )
     {
         //With every loop, the values of inputFileID, inputFileArrTime, inputFileRunTime and inputFilePriority changes
         //The values are added to the array fileProcesses
-        Processes p;
-        p.ID            = inputFileID;
+        process p;
+        p.id            = inputFileID;
         p.arrivalTime   = inputFileArrTime;
-        p.runningTime   = inputFileRunTime;
+        p.runTime       = inputFileRunTime;
         p.priority      = inputFilePriority;
         fileProcesses[fileProcessesCount++] = p;
     }
     
     //NOW we have an array of Processes "fileProcesses" with size "fileProcessesCount" that contains the parameters of each process
-    
-
+    /*
+    for (int i = 0; i < fileProcessesCount; i++)
+    {  
+        printf("%d\t%d\t%d\t%d\n",fileProcesses[i].id,fileProcesses[i].arrivalTime,fileProcesses[i].runTime,fileProcesses[i].priority);
+    }
+    */
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
     int Algorithm = atoi(argv[2]);
     if (Algorithm < 1 || Algorithm > 5)
