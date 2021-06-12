@@ -1,6 +1,9 @@
 #include "headers.h"
+#include "PriorityQueue.h"
 
 void clearResources(int);
+
+
 
 int main(int argc, char *argv[])
 {
