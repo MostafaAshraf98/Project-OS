@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     //TODO: implement the scheduler.
     PriorityQueue *pq = newPriorityQueue();
     process *p;  // received process
-    process p2; // running proces
+    process *p2; // running proces
     process *pointerToRunningProcess = NULL;
     int testinteger;
 
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
         if (pointerToRunningProcess == NULL && !isEmpty(&pq)) // if there is not a running process
         {
             p2 = dequeue(&pq);
-            pointerToRunningProcess = &p2;
+            pointerToRunningProcess = p2;
         }
         if ((currentClk - previousClk) == 1 && (pointerToRunningProcess != NULL))
         {

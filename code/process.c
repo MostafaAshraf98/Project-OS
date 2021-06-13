@@ -12,7 +12,7 @@ int main(int agrc, char *argv[])
     shmid = shmget(key_id, sizeof(process), IPC_CREAT | 0644);   // create or verify the existence of a shared memory
     process *shmaddr = (process *)shmat(shmid, (process *)0, 0); // attach to shared memory address
 
-    printProcess(*shmaddr);
+    printProcess(shmaddr);
     //TODO The process needs to get the remaining time from somewhere
     //remainingtime = ??;
     
