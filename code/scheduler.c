@@ -2,9 +2,8 @@
 
 struct msgbuff
 {
-    int mtype;
+    long mtype;
     process p;
-    char mtext[256];
 };
 
 typedef struct OutputLine
@@ -27,7 +26,7 @@ int Quantum;
 struct msgbuff messageToReceive;
 int currentClk;
 int previousClk;
-const char *pathProcess = "/media/sf_Ubunto_Sharing_Folder/Project repo/Project-OS/code/process.out";
+const char *pathProcess = "/home/ahmed/Desktop/Pro/code/process.out";
 
 void handler(int signum)
 {
@@ -37,12 +36,13 @@ void handler(int signum)
 
 int main(int argc, char *argv[])
 {
+    initClk();
     previousClk = getClk();
     int *arrAdresses = (int *)malloc(sizeof(int));
     int k = 0; // iterator on the array of Addresses
     printf("scheduler is executing\n");
     signal(SIGUSR1, handler);
-    initClk();
+    
     Algorithm = atoi(argv[1]);
     if (Algorithm == 5)
         Quantum = atoi(argv[2]);
@@ -65,7 +65,8 @@ int main(int argc, char *argv[])
     while (stillSending)
     {
         currentClk = getClk();
-        rec_val = msgrcv(msgQ_id, &messageToReceive, sizeof(messageToReceive.p), 0, !IPC_NOWAIT); // receives messages with any mtype
+        size_t sz = sizeof(struct msgbuff) - sizeof(long);
+        rec_val = msgrcv(msgQ_id, &messageToReceive, sz, 0, !IPC_NOWAIT); // receives messages with any mtype
         if (rec_val != -1)                                                                        // if the shcedule did receive a new process successfully
         {
 

@@ -4,9 +4,9 @@ int msgQ_id;
 
 struct msgbuff
 {
-    int mtype;
+    long mtype;
     process p;
-    char mtext[256];
+    //char mtext[256];
 };
 
 int main(int argc, char *argv[])
@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
     int inputFileArrTime;
     int inputFileRunTime;
     int inputFilePriority;
-    const char *pathClk = "/media/sf_Ubunto_Sharing_Folder/Project repo/Project-OS/code/clk.out";
-    const char *pathScheduler = "/media/sf_Ubunto_Sharing_Folder/Project repo/Project-OS/code/scheduler.out";
+    const char *pathClk = "/home/ahmed/Desktop/Pro/code/clk.out";
+    const char *pathScheduler = "/home/ahmed/Desktop/Pro/code/scheduler.out";
     int send_val;
 
     int count = 0;
@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
     else if (clk_Pid == 0) // CLK
     {
         execl(pathClk, "clk.out", NULL);
+        return 2;
     }
 
     int scheduler_Pid = fork();
@@ -126,9 +127,13 @@ int main(int argc, char *argv[])
     else if (scheduler_Pid == 0) //SCHEDULER
     {
         if (Algorithm != 5)
+        {
             execl(pathScheduler, "scheduler.out", argv[3], NULL);
+        }
         else
+        {
             execl(pathScheduler, "scheduler.out", argv[3], argv[5], NULL);
+        }
     }
 
     // 4. Use this function after creating the clock process to initialize clock.
@@ -159,7 +164,9 @@ int main(int argc, char *argv[])
         {
             struct msgbuff messageToSend;
             messageToSend.p = fileProcesses[k];
-            send_val = msgsnd(msgQ_id, &messageToSend, sizeof(messageToSend.p), !IPC_NOWAIT);
+            messageToSend.mtype = 1;
+            size_t sz = sizeof(struct msgbuff) - sizeof(long);
+            send_val = msgsnd(msgQ_id, &messageToSend, sz, !IPC_NOWAIT);
             if (send_val == -1)
                 perror("Error in send\n");
             else
