@@ -1,5 +1,4 @@
 #include "headers.h"
-
 void clearResources(int);
 int msgQ_id;
 
@@ -16,7 +15,8 @@ int main(int argc, char *argv[])
     // TODO Initialization
     // 1. Read the input files.
     FILE *inputFile;
-    inputFile = fopen("processes.txt", "r"); //Opens file with parameters (path, reading only)
+    char* inputFileName = argv[1];
+    inputFile = fopen(inputFileName, "r"); //Opens file with parameters (path, reading only)
     //Parameters that will be readed from the input file
     int inputFileID;
     int inputFileArrTime;
@@ -26,33 +26,53 @@ int main(int argc, char *argv[])
     const char *pathScheduler = "/media/sf_Ubunto_Sharing_Folder/Project repo/Project-OS/code/scheduler.out";
     int send_val;
 
-    char buff[255];
-    fgets(buff, 255, inputFile); //This reads the first line "#id arrival runtime priority" which is not important
-
-    while (fscanf(inputFile, "%d\t%d\t%d\t%d\n", &inputFileID, &inputFileArrTime, &inputFileRunTime, &inputFilePriority) != EOF)
+    int count = 0;
+    char c;
+    c = fgetc(inputFile);
+    while (c != EOF)
     {
-        //This while loop is used to get the number of processes in the file to create an array
+        if (c == '#')
+        {
+            char buff[255];
+            fgets(buff, 255, inputFile);
+        }
+        else
+        {
+            count++;
+        }
+        c = fgetc(inputFile);
     }
 
     //inputFileId is the number of process
-    process fileProcesses[inputFileID];
+    process fileProcesses[count];
     int fileProcessesCount = 0;
 
     fclose(inputFile); //Closes the inputFile
 
-    inputFile = fopen("processes.txt", "r"); //Opens file with parameters (path, reading only)
+    inputFile = fopen(inputFileName, "r"); //Opens file with parameters (path, reading only)
 
-    fgets(buff, 255, inputFile); //This reads the first line "#id arrival runtime priority" which is not important
-    while (fscanf(inputFile, "%d\t%d\t%d\t%d\n", &inputFileID, &inputFileArrTime, &inputFileRunTime, &inputFilePriority) != EOF)
+    c = fgetc(inputFile);
+    while (c != EOF)
     {
         //With every loop, the values of inputFileID, inputFileArrTime, inputFileRunTime and inputFilePriority changes
         //The values are added to the array fileProcesses
-        process p;
-        p.id = inputFileID;
-        p.arrivalTime = inputFileArrTime;
-        p.runTime = inputFileRunTime;
-        p.priority = inputFilePriority;
-        fileProcesses[fileProcessesCount++] = p;
+        if (c == '#')
+        {
+            char buff[255];
+            fgets(buff, 255, inputFile);
+        }
+        else
+        {
+            inputFileID = c - '0'; //To convert '0' --> 0, '1' --> 1 etc.
+            fscanf(inputFile, "\t%d\t%d\t%d\n", &inputFileArrTime, &inputFileRunTime, &inputFilePriority);
+            process p;
+            p.id = inputFileID;
+            p.arrivalTime = inputFileArrTime;
+            p.runTime = inputFileRunTime;
+            p.priority = inputFilePriority;
+            fileProcesses[fileProcessesCount++] = p;
+        }
+        c = fgetc(inputFile);
     }
 
     //NOW we have an array of Processes "fileProcesses" with size "fileProcessesCount" that contains the parameters of each process
