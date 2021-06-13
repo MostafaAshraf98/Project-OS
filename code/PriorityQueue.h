@@ -63,7 +63,7 @@ process* front(PriorityQueue **q)
 {
    if (isEmpty(q))
    {
-      process* p;
+      process* p=NULL;
       return p;
    }
    return ((*q)->head->p);
@@ -73,7 +73,7 @@ process* dequeue(PriorityQueue (**q))
 {
    if (isEmpty(q))
    {
-      process* p;
+      process* p=NULL;
       return p;
    }
    Node *temp = ((*q)->head);

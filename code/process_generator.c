@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
     //     printf("%d\t%d\t%d\t%d\n",fileProcesses[i]->id,fileProcesses[i]->arrivalTime,fileProcesses[i]->runTime,fileProcesses[i]->priority);
     // }
 
-
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
     int Algorithm = atoi(argv[3]);
     printf("the number of algorithm: %d\n", Algorithm);
