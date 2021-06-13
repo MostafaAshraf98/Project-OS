@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #include <stdlib.h>
 // priority Node
@@ -9,7 +10,6 @@ typedef struct process
    int arrivalTime;
    int priority;
    int runTime;
-   int executionTime;
    int remainingTime;
    int WaitingTime;
 } process;
@@ -21,7 +21,6 @@ void printProcess(process p)
    printf("state is: %s\n", p.state);
    printf("arrival times is: %d\n", p.arrivalTime);
    printf("runTime is: %d\n", p.runTime);
-   printf("execution time is: %d\n", p.executionTime);
    printf("remaining time is: %d\n", p.remainingTime);
    printf("Waiting time is: %d\n\n", p.WaitingTime);
 }
@@ -54,7 +53,6 @@ Node *newNode(process p)
    return temp;
 }
 
-// Function to check the queue is empty
 int isEmpty(PriorityQueue **q)
 {
    return (*q)->head == NULL;
@@ -107,8 +105,6 @@ void enqueue(PriorityQueue **q, process p)
       {
          start = start->next;
       }
-      // Either at the ends of the list
-      // or at required position
       temp->next = start->next;
       start->next = temp;
    }

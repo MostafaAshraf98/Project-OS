@@ -1,27 +1,35 @@
 #include "headers.h"
-#include "PriorityQueue.h"
 
 void clearResources(int);
+int msgQ_id;
 
+struct msgbuff
+{
+    int mtype;
+    process p;
+    char mtext[256];
+};
 
 int main(int argc, char *argv[])
 {
     signal(SIGINT, clearResources);
     // TODO Initialization
     // 1. Read the input files.
-    FILE* inputFile;
-    inputFile = fopen("processes.txt", "r");    //Opens file with parameters (path, reading only)
+    FILE *inputFile;
+    inputFile = fopen("processes.txt", "r"); //Opens file with parameters (path, reading only)
     //Parameters that will be readed from the input file
     int inputFileID;
     int inputFileArrTime;
     int inputFileRunTime;
     int inputFilePriority;
+    const char *pathClk = "/media/sf_Ubunto_Sharing_Folder/Project repo/Project-OS/code/clk.out";
+    const char *pathScheduler = "/media/sf_Ubunto_Sharing_Folder/Project repo/Project-OS/code/scheduler.out";
+    int send_val;
 
-    
     char buff[255];
-    fgets(buff,255,inputFile);  //This reads the first line "#id arrival runtime priority" which is not important
-    
-    while ( fscanf( inputFile, "%d\t%d\t%d\t%d\n", &inputFileID, &inputFileArrTime, &inputFileRunTime, &inputFilePriority) != EOF )
+    fgets(buff, 255, inputFile); //This reads the first line "#id arrival runtime priority" which is not important
+
+    while (fscanf(inputFile, "%d\t%d\t%d\t%d\n", &inputFileID, &inputFileArrTime, &inputFileRunTime, &inputFilePriority) != EOF)
     {
         //This while loop is used to get the number of processes in the file to create an array
     }
@@ -30,87 +38,132 @@ int main(int argc, char *argv[])
     process fileProcesses[inputFileID];
     int fileProcessesCount = 0;
 
-    fclose(inputFile);  //Closes the inputFile
+    fclose(inputFile); //Closes the inputFile
 
-    
+    inputFile = fopen("processes.txt", "r"); //Opens file with parameters (path, reading only)
 
-    inputFile = fopen("processes.txt", "r");    //Opens file with parameters (path, reading only)
-
-    fgets(buff,255,inputFile);  //This reads the first line "#id arrival runtime priority" which is not important
-    while ( fscanf( inputFile, "%d\t%d\t%d\t%d\n", &inputFileID, &inputFileArrTime, &inputFileRunTime, &inputFilePriority) != EOF )
+    fgets(buff, 255, inputFile); //This reads the first line "#id arrival runtime priority" which is not important
+    while (fscanf(inputFile, "%d\t%d\t%d\t%d\n", &inputFileID, &inputFileArrTime, &inputFileRunTime, &inputFilePriority) != EOF)
     {
         //With every loop, the values of inputFileID, inputFileArrTime, inputFileRunTime and inputFilePriority changes
         //The values are added to the array fileProcesses
         process p;
-        p.id            = inputFileID;
-        p.arrivalTime   = inputFileArrTime;
-        p.runTime       = inputFileRunTime;
-        p.priority      = inputFilePriority;
+        p.id = inputFileID;
+        p.arrivalTime = inputFileArrTime;
+        p.runTime = inputFileRunTime;
+        p.priority = inputFilePriority;
         fileProcesses[fileProcessesCount++] = p;
     }
-    
+
     //NOW we have an array of Processes "fileProcesses" with size "fileProcessesCount" that contains the parameters of each process
-    /*
-    for (int i = 0; i < fileProcessesCount; i++)
-    {  
-        printf("%d\t%d\t%d\t%d\n",fileProcesses[i].id,fileProcesses[i].arrivalTime,fileProcesses[i].runTime,fileProcesses[i].priority);
-    }
-    */
+    // for (int i = 0; i < fileProcessesCount; i++)
+    // {
+    //     printf("%d\t%d\t%d\t%d\n",fileProcesses[i].id,fileProcesses[i].arrivalTime,fileProcesses[i].runTime,fileProcesses[i].priority);
+    // }
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
-    int Algorithm = atoi(argv[2]);
+    int Algorithm = atoi(argv[3]);
+    printf("the number of algorithm: %d\n", Algorithm);
     if (Algorithm < 1 || Algorithm > 5)
     {
         printf("error \n");
     }
     int Quantum = 0;
     if (Algorithm == 5)
-        Quantum = atoi(argv[3]);
-  
+        Quantum = atoi(argv[5]);
+
     switch (Algorithm)
     {
-    case 1:  printf(" Scheduled Algorithm is First Come First Serve (FCFS)\n");
-         break;
-    case 2:  printf("Scheduled Algorithm isShortest Job First (SJF)\n");
+    case 1:
+        printf("Scheduled Algorithm is First Come First Serve (FCFS)\n");
         break;
-    case 3: printf("Scheduled Algorithm is Preemptive Highest Priority First (HPF) \n");
+    case 2:
+        printf("Scheduled Algorithm is Shortest Job First (SJF)\n");
         break;
-    case 4: printf("Scheduled Algorithm isShortest Remaining \n");
+    case 3:
+        printf("Scheduled Algorithm is Preemptive Highest Priority First (HPF) \n");
         break;
-    case 5:  printf("Scheduled Algorithm is Round Robin\n");
+    case 4:
+        printf("Scheduled Algorithm is Shortest Remaining Time Next \n");
+        break;
+    case 5:
+        printf("Scheduled Algorithm is Round Robin (RR)\n");
         break;
     }
-    
+
     // 3. Initiate and create the scheduler and clock processes.
-    
+
     int clk_Pid = fork();
     if (clk_Pid == -1)
         return -1;
-    else if (clk_Pid == 0)
+    else if (clk_Pid == 0) // CLK
     {
-        //clock
+        execl(pathClk, "clk.out", NULL);
     }
 
     int scheduler_Pid = fork();
     if (scheduler_Pid == -1)
         return -1;
-    else if (scheduler_Pid == 0)
+    else if (scheduler_Pid == 0) //SCHEDULER
     {
-        //scheduler
+        if (Algorithm != 5)
+            execl(pathScheduler, "scheduler.out", argv[3], NULL);
+        else
+            execl(pathScheduler, "scheduler.out", argv[3], argv[5], NULL);
     }
-    
+
     // 4. Use this function after creating the clock process to initialize clock.
     initClk();
-    // To get time use this function. 
+    // To get time use this function.
     int x = getClk();
     printf("Current Time is %d\n", x);
     // TODO Generation Main Loop
+
     // 5. Create a data structure for processes and provide it with its parameters.
+
     // 6. Send the information to the scheduler at the appropriate time.
-    // 7. Clear clock resources
+    int k = 0;
+    key_t key_id;
+    key_id = ftok("keyfile", 65);
+    msgQ_id = msgget(key_id, 0666 | IPC_CREAT); // creates or verifies the existence of an up queue with this key_id
+    if (msgQ_id == -1)
+    {
+        printf("there is an error in creating of the message queue\n");
+        perror("Error in create");
+        exit(-1);
+    }
+    printf("the procceses count equals:%d\n", fileProcessesCount);
+    while (k != fileProcessesCount)
+    {
+        const int currentTime = getClk();
+        if (currentTime >= fileProcesses[k].arrivalTime)
+        {
+            struct msgbuff messageToSend;
+            messageToSend.p = fileProcesses[k];
+            send_val = msgsnd(msgQ_id, &messageToSend, sizeof(messageToSend.p), !IPC_NOWAIT);
+            if (send_val == -1)
+                perror("Error in send\n");
+            else
+                printf("message sent\n");
+            k++;
+        }
+    }
+    //     //send signal to the scheduler that it has finished
+    kill(scheduler_Pid, SIGUSR1);
+    int stat_loc;
+    int sid = wait(&stat_loc);
+    while ((stat_loc & 0x00FF)) // wait until the scheduler exits or is destroyed
+    {
+        int sid = wait(&stat_loc);
+    };
+    //     // 7. Clear clock resources
     destroyClk(true);
 }
 
 void clearResources(int signum)
 {
     //TODO Clears all resources in case of interruption
+    msgctl(msgQ_id, IPC_RMID, (struct msqid_ds *)0);
+    printf("clearResources is called\n");
+    killpg(getpgrp(), SIGKILL);
+    destroyClk(true);
 }
