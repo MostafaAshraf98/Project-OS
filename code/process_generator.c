@@ -5,7 +5,7 @@ int msgQ_id;
 struct msgbuff
 {
     long mtype;
-    process* p;
+    process p;
     //char mtext[256];
 };
 
@@ -50,7 +50,8 @@ int main(int argc, char *argv[])
     }
 
     //inputFileId is the number of process
-    process* fileProcesses[count];
+    //process* fileProcesses[count];
+    process fileProcesses[count];
     int fileProcessesCount = 0;
 
     fclose(inputFile); //Closes the inputFile
@@ -71,11 +72,12 @@ int main(int argc, char *argv[])
         {
             inputFileID = c - '0'; //To convert '0' --> 0, '1' --> 1 etc.
             fscanf(inputFile, "\t%d\t%d\t%d\n", &inputFileArrTime, &inputFileRunTime, &inputFilePriority);
-            process* p = (process*) malloc(sizeof(process));
-            p->id = inputFileID;
-            p->arrivalTime = inputFileArrTime;
-            p->runTime = inputFileRunTime;
-            p->priority = inputFilePriority;
+            //process* p = (process*) malloc(sizeof(process));
+            process p;
+            p.id = inputFileID;
+            p.arrivalTime = inputFileArrTime;
+            p.runTime = inputFileRunTime;
+            p.priority = inputFilePriority;
             fileProcesses[fileProcessesCount++] = p;
         }
         c = fgetc(inputFile);
@@ -168,12 +170,13 @@ int main(int argc, char *argv[])
     while (k != fileProcessesCount)
     {
         const int currentTime = getClk();
-        if (currentTime >= fileProcesses[k]->arrivalTime)
+        if (currentTime >= fileProcesses[k].arrivalTime)
         {
             struct msgbuff messageToSend;
             messageToSend.p = fileProcesses[k];
             messageToSend.mtype = 1;
             size_t sz = sizeof(struct msgbuff) - sizeof(long);
+            //printf("===============SEND %p\nID= %d",messageToSend.p,messageToSend.p->id);
             send_val = msgsnd(msgQ_id, &messageToSend, sz, !IPC_NOWAIT);
             if (send_val == -1)
                 perror("Error in send\n");

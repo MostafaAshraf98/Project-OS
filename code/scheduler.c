@@ -3,7 +3,7 @@
 struct msgbuff
 {
     long mtype;
-    process* p;
+    process p;
 };
 
 typedef struct OutputLine
@@ -27,6 +27,12 @@ struct msgbuff messageToReceive;
 int currentClk;
 int previousClk;
 
+//=============================================
+void addProcessToArr(process *p1);
+//Array of received process
+process *arrProcesses;
+int arrProSize;
+//=================================================
 void handler(int signum)
 {
     printf("signal has been sent and scheduler is exiting\n");
@@ -47,8 +53,13 @@ int main(int argc, char *argv[])
     int *arrPIDS = (int *)malloc(sizeof(int));
     int k = 0; // iterator on the array of Addresses
 
-    signal(SIGUSR1, handler);
+    //======================================================================
+    //Array of received process
+    arrProcesses = NULL;
+    arrProSize = 0;
+    //=====================================================================
 
+    signal(SIGUSR1, handler);
     Algorithm = atoi(argv[1]);
     if (Algorithm == 5)
         Quantum = atoi(argv[2]);
@@ -63,8 +74,8 @@ int main(int argc, char *argv[])
 
     //TODO: implement the scheduler.
     PriorityQueue *pq = newPriorityQueue();
-    process *p;  // received process
-    process *p2; // running proces
+    process *ptrRecPro; // received process
+    process *p2;        // running proces
     process *pointerToRunningProcess = NULL;
     int testinteger;
 
@@ -77,38 +88,47 @@ int main(int argc, char *argv[])
         {
 
             printf("received message\n");
-            p = messageToReceive.p;
+            addProcessToArr(&(messageToReceive.p));
+            
+            arrProSize--;
+
+            printf("%d\t%d\t%d\t%d\n",arrProcesses[arrProSize].id,arrProcesses[arrProSize].arrivalTime
+            ,arrProcesses[arrProSize].runTime,arrProcesses[arrProSize].priority);
+            
+            ptrRecPro = & arrProcesses[arrProSize];
+            arrProSize++;
+            
             switch (Algorithm)
             {
             case 1: // FCFS
-                p->remainingTime = p->runTime;
-                p->WaitingTime = 0;
-                strcpy(p->state, "ready");
-                p->priority = 0;
+                ptrRecPro->remainingTime = ptrRecPro->runTime;
+                ptrRecPro->WaitingTime = 0;
+                strcpy(ptrRecPro->state, "ready");
+                ptrRecPro->priority = 0;
                 break;
             case 2: //SJF
-                p->remainingTime = p->runTime;
-                p->WaitingTime = 0;
-                strcpy(p->state, "ready");
-                p->priority = p->runTime;
+                ptrRecPro->remainingTime = ptrRecPro->runTime;
+                ptrRecPro->WaitingTime = 0;
+                strcpy(ptrRecPro->state, "ready");
+                ptrRecPro->priority = ptrRecPro->runTime;
                 break;
-            case 3: //HPF
-                p->remainingTime = p->runTime;
-                p->WaitingTime = 0;
-                strcpy(p->state, "ready");
+            case 3: //HptrRecProF
+                ptrRecPro->remainingTime = ptrRecPro->runTime;
+                ptrRecPro->WaitingTime = 0;
+                strcpy(ptrRecPro->state, "ready");
 
                 break;
             case 4: //SRTN
-                p->remainingTime = p->runTime;
-                p->WaitingTime = 0;
-                strcpy(p->state, "ready");
-                p->priority = p->remainingTime;
+                ptrRecPro->remainingTime = ptrRecPro->runTime;
+                ptrRecPro->WaitingTime = 0;
+                strcpy(ptrRecPro->state, "ready");
+                ptrRecPro->priority = ptrRecPro->remainingTime;
                 break;
             case 5: //RR
-                p->remainingTime = p->runTime;
-                p->WaitingTime = 0;
-                strcpy(p->state, "ready");
-                p->priority = 0;
+                ptrRecPro->remainingTime = ptrRecPro->runTime;
+                ptrRecPro->WaitingTime = 0;
+                strcpy(ptrRecPro->state, "ready");
+                ptrRecPro->priority = 0;
                 break;
             }
             //here we want to make a IPC between process and scheduler
@@ -130,13 +150,23 @@ int main(int argc, char *argv[])
                 execl(pathProcess, "process.out", buff, NULL); // the process
             }
             secretNumber++;
-            enqueue(&pq, p);
 
-            arrPIDS[k] = p->id;
+            //Adding the process to the queue
+            enqueue(&pq, ptrRecPro);
+            // process* frot = front(&pq);
+            
+            // printf("%d\t%d\t%d\t%d\n",arrProcesses[arrProSize].id,arrProcesses[arrProSize].arrivalTime
+            // ,arrProcesses[arrProSize].runTime,arrProcesses[arrProSize].priority);
+            // printProcess(frot);
+            // fort->runTime--;
+            // printf("==========================after\n");
+            // printProcess(frot);
+
+            arrPIDS[k] = ptrRecPro->id;
             arrSharedMemoryAdresses[k] = shmaddr;
 
-            arrSharedMemoryAdresses[k] = p;
-            strcpy((arrSharedMemoryAdresses[k])->state, p->state);
+            arrSharedMemoryAdresses[k] = ptrRecPro;
+            strcpy((arrSharedMemoryAdresses[k])->state, ptrRecPro->state);
             k++;
         }
         if (pointerToRunningProcess == NULL && !isEmpty(&pq)) // if there is not a running process
@@ -173,4 +203,19 @@ int main(int argc, char *argv[])
     //TODO: upon termination release the clock resources.
     destroyClk(false);
     exit(0);
+}
+
+void addProcessToArr(process *p1)
+{
+    arrProSize++;
+    arrProcesses = (process *)realloc(arrProcesses, arrProSize*sizeof(process));
+    arrProSize--;
+    arrProcesses[arrProSize].id             = p1->id;
+    arrProcesses[arrProSize].arrivalTime    = p1->arrivalTime;
+    arrProcesses[arrProSize].priority       = p1->priority;
+    arrProcesses[arrProSize].remainingTime  = p1->remainingTime;
+    arrProcesses[arrProSize].runTime        = p1->runTime;
+    arrProcesses[arrProSize].WaitingTime    = p1->WaitingTime;
+    strcpy(arrProcesses[arrProSize].state,   p1->state);
+    arrProSize++;
 }
