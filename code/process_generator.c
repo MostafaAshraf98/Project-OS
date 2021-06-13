@@ -5,7 +5,7 @@ int msgQ_id;
 struct msgbuff
 {
     long mtype;
-    process p;
+    process* p;
     //char mtext[256];
 };
 
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     }
 
     //inputFileId is the number of process
-    process fileProcesses[count];
+    process* fileProcesses[count];
     int fileProcessesCount = 0;
 
     fclose(inputFile); //Closes the inputFile
@@ -71,11 +71,11 @@ int main(int argc, char *argv[])
         {
             inputFileID = c - '0'; //To convert '0' --> 0, '1' --> 1 etc.
             fscanf(inputFile, "\t%d\t%d\t%d\n", &inputFileArrTime, &inputFileRunTime, &inputFilePriority);
-            process p;
-            p.id = inputFileID;
-            p.arrivalTime = inputFileArrTime;
-            p.runTime = inputFileRunTime;
-            p.priority = inputFilePriority;
+            process* p = (process*) malloc(sizeof(process));
+            p->id = inputFileID;
+            p->arrivalTime = inputFileArrTime;
+            p->runTime = inputFileRunTime;
+            p->priority = inputFilePriority;
             fileProcesses[fileProcessesCount++] = p;
         }
         c = fgetc(inputFile);
@@ -84,8 +84,10 @@ int main(int argc, char *argv[])
     //NOW we have an array of Processes "fileProcesses" with size "fileProcessesCount" that contains the parameters of each process
     // for (int i = 0; i < fileProcessesCount; i++)
     // {
-    //     printf("%d\t%d\t%d\t%d\n",fileProcesses[i].id,fileProcesses[i].arrivalTime,fileProcesses[i].runTime,fileProcesses[i].priority);
+    //     printf("%d\t%d\t%d\t%d\n",fileProcesses[i]->id,fileProcesses[i]->arrivalTime,fileProcesses[i]->runTime,fileProcesses[i]->priority);
     // }
+
+
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
     int Algorithm = atoi(argv[3]);
     printf("the number of algorithm: %d\n", Algorithm);
@@ -166,7 +168,7 @@ int main(int argc, char *argv[])
     while (k != fileProcessesCount)
     {
         const int currentTime = getClk();
-        if (currentTime >= fileProcesses[k].arrivalTime)
+        if (currentTime >= fileProcesses[k]->arrivalTime)
         {
             struct msgbuff messageToSend;
             messageToSend.p = fileProcesses[k];

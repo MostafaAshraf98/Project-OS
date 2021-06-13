@@ -3,7 +3,7 @@
 struct msgbuff
 {
     long mtype;
-    process p;
+    process* p;
 };
 
 typedef struct OutputLine
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
     //TODO: implement the scheduler.
     PriorityQueue *pq = newPriorityQueue();
-    process p;  // received process
+    process *p;  // received process
     process p2; // running proces
     process *pointerToRunningProcess = NULL;
     int testinteger;
@@ -81,34 +81,34 @@ int main(int argc, char *argv[])
             switch (Algorithm)
             {
             case 1: // FCFS
-                p.remainingTime = p.runTime;
-                p.WaitingTime = 0;
-                strcpy(p.state, "ready");
-                p.priority = 0;
+                p->remainingTime = p->runTime;
+                p->WaitingTime = 0;
+                strcpy(p->state, "ready");
+                p->priority = 0;
                 break;
             case 2: //SJF
-                p.remainingTime = p.runTime;
-                p.WaitingTime = 0;
-                strcpy(p.state, "ready");
-                p.priority = p.runTime;
+                p->remainingTime = p->runTime;
+                p->WaitingTime = 0;
+                strcpy(p->state, "ready");
+                p->priority = p->runTime;
                 break;
             case 3: //HPF
-                p.remainingTime = p.runTime;
-                p.WaitingTime = 0;
-                strcpy(p.state, "ready");
+                p->remainingTime = p->runTime;
+                p->WaitingTime = 0;
+                strcpy(p->state, "ready");
 
                 break;
             case 4: //SRTN
-                p.remainingTime = p.runTime;
-                p.WaitingTime = 0;
-                strcpy(p.state, "ready");
-                p.priority = p.remainingTime;
+                p->remainingTime = p->runTime;
+                p->WaitingTime = 0;
+                strcpy(p->state, "ready");
+                p->priority = p->remainingTime;
                 break;
             case 5: //RR
-                p.remainingTime = p.runTime;
-                p.WaitingTime = 0;
-                strcpy(p.state, "ready");
-                p.priority = 0;
+                p->remainingTime = p->runTime;
+                p->WaitingTime = 0;
+                strcpy(p->state, "ready");
+                p->priority = 0;
                 break;
             }
             //here we want to make a IPC between process and scheduler
@@ -132,11 +132,11 @@ int main(int argc, char *argv[])
             secretNumber++;
             enqueue(&pq, p);
 
-            arrPIDS[k] = p.id;
+            arrPIDS[k] = p->id;
             arrSharedMemoryAdresses[k] = shmaddr;
 
-            *arrSharedMemoryAdresses[k] = p;
-            strcpy((arrSharedMemoryAdresses[k])->state, p.state);
+            arrSharedMemoryAdresses[k] = p;
+            strcpy((arrSharedMemoryAdresses[k])->state, p->state);
             k++;
         }
         if (pointerToRunningProcess == NULL && !isEmpty(&pq)) // if there is not a running process
