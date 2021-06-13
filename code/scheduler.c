@@ -26,7 +26,6 @@ int Quantum;
 struct msgbuff messageToReceive;
 int currentClk;
 int previousClk;
-const char *pathProcess = "/home/ahmed/Desktop/Pro/code/process.out";
 
 void handler(int signum)
 {
@@ -36,13 +35,20 @@ void handler(int signum)
 
 int main(int argc, char *argv[])
 {
+    printf("scheduler is executing\n");
+    char buf1[500];
+    getcwd(buf1, sizeof(buf1));
+    const char *pathProcess = strcat(buf1, "/process.out");
+
     initClk();
     previousClk = getClk();
-    int *arrAdresses = (int *)malloc(sizeof(int));
+
+    process **arrSharedMemoryAdresses = (process **)malloc(sizeof(process *));
+    int *arrPIDS = (int *)malloc(sizeof(int));
     int k = 0; // iterator on the array of Addresses
-    printf("scheduler is executing\n");
+
     signal(SIGUSR1, handler);
-    
+
     Algorithm = atoi(argv[1]);
     if (Algorithm == 5)
         Quantum = atoi(argv[2]);
@@ -57,17 +63,17 @@ int main(int argc, char *argv[])
 
     //TODO: implement the scheduler.
     PriorityQueue *pq = newPriorityQueue();
-    process p;
-    process *runningProcess = NULL;
-    process p2;
+    process p;  // received process
+    process p2; // running proces
+    process *pointerToRunningProcess = NULL;
     int testinteger;
 
     while (stillSending)
     {
         currentClk = getClk();
         size_t sz = sizeof(struct msgbuff) - sizeof(long);
-        rec_val = msgrcv(msgQ_id, &messageToReceive, sz, 0, !IPC_NOWAIT); // receives messages with any mtype
-        if (rec_val != -1)                                                                        // if the shcedule did receive a new process successfully
+        rec_val = msgrcv(msgQ_id, &messageToReceive, sz, 0, IPC_NOWAIT); // receives messages with any mtype
+        if (rec_val != -1)                                               // if the shcedule did receive a new process successfully
         {
 
             printf("received message\n");
@@ -77,58 +83,72 @@ int main(int argc, char *argv[])
             case 1: // FCFS
                 p.remainingTime = p.runTime;
                 p.WaitingTime = 0;
-                p.state = "ready";
+                strcpy(p.state, "ready");
                 p.priority = 0;
                 break;
             case 2: //SJF
                 p.remainingTime = p.runTime;
                 p.WaitingTime = 0;
-                p.state = "ready";
+                strcpy(p.state, "ready");
                 p.priority = p.runTime;
                 break;
             case 3: //HPF
                 p.remainingTime = p.runTime;
                 p.WaitingTime = 0;
-                p.state = "ready";
+                strcpy(p.state, "ready");
+
                 break;
             case 4: //SRTN
                 p.remainingTime = p.runTime;
                 p.WaitingTime = 0;
-                p.state = "ready";
+                strcpy(p.state, "ready");
                 p.priority = p.remainingTime;
                 break;
             case 5: //RR
                 p.remainingTime = p.runTime;
                 p.WaitingTime = 0;
-                p.state = "ready";
+                strcpy(p.state, "ready");
                 p.priority = 0;
                 break;
             }
-            // //here we want to make a IPC between process and scheduler
+            //here we want to make a IPC between process and scheduler
+            key_t key_id;
+            key_id = ftok("keyfile", secretNumber);
+            shmid = shmget(key_id, sizeof(process), IPC_CREAT | 0644);   // create or verify the existence of a shared memory
+            process *shmaddr = (process *)shmat(shmid, (process *)0, 0); // attach to shared memory address
+            char buff[100];
 
-            // key_t key_id;
-            // key_id = ftok("keyfile", secretNumber);
-            // secretNumber++;
-            // shmid = shmget(key_id, 4096, IPC_CREAT | 0644); // create or verify the existence of a shared memory
-            // void *shmaddr = shmat(shmid, (void *)0, 0);     // attach to shared memory address
-            // char buff[100];
-            // sprintf(buff,"%d", secretNumber);
-            // printf("The secret number in integer is: %d\n",secretNumber);
-            // printf("The secret number from itoa is : %s\n",buff);
-            // execl(pathProcess, "process.out", buff, NULL);
+            sprintf(buff, "%d", secretNumber);
 
+            int process_pid = fork(); // forking the process
+            if (process_pid == -1)
+            {
+                perror("error");
+            }
+            else if (process_pid == 0) //the process
+            {
+                execl(pathProcess, "process.out", buff, NULL); // the process
+            }
+            secretNumber++;
             enqueue(&pq, p);
+
+            arrPIDS[k] = p.id;
+            arrSharedMemoryAdresses[k] = shmaddr;
+
+            *arrSharedMemoryAdresses[k] = p;
+            strcpy((arrSharedMemoryAdresses[k])->state, p.state);
+            k++;
         }
-        if (runningProcess == NULL && !isEmpty(&pq)) // if there is not a running process
+        if (pointerToRunningProcess == NULL && !isEmpty(&pq)) // if there is not a running process
         {
             p2 = dequeue(&pq);
-            runningProcess = &p2;
+            pointerToRunningProcess = &p2;
         }
-        if ((currentClk - previousClk) == 1 && (runningProcess != NULL))
+        if ((currentClk - previousClk) == 1 && (pointerToRunningProcess != NULL))
         {
             incrementWaintingTime(&pq);
-            runningProcess->remainingTime -= 1;
-            if (runningProcess->remainingTime == 0)
+            pointerToRunningProcess->remainingTime -= 1;
+            if (pointerToRunningProcess->remainingTime == 0)
             {
             }
             switch (Algorithm) // based on algorithm we will decide what happens to the process in running

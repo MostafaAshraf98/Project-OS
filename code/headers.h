@@ -56,10 +56,10 @@ void initClk()
 
 void destroyClk(bool terminateAll)
 {
-    printf("destroying all\n");
     shmdt(shmaddr);
     if (terminateAll)
     {
+        printf("destroying all\n");
         shmctl(shmid, IPC_RMID, (struct shmid_ds *)0);
         killpg(getpgrp(), SIGINT);
     }

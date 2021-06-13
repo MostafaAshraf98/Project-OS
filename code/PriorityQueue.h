@@ -1,11 +1,12 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 // priority Node
 
 typedef struct process
 {
-   char *state;
+   char state[20];
    int id;
    int arrivalTime;
    int priority;
@@ -77,7 +78,7 @@ process dequeue(PriorityQueue (**q))
    }
    Node *temp = ((*q)->head);
    ((*q)->head) = ((*q)->head)->next;
-   temp->p.state = "running";
+   strcpy(temp->p.state,"running");
    process returnedProcess = temp->p;
    free(temp);
    return returnedProcess;

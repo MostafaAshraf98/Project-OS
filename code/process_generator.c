@@ -15,15 +15,21 @@ int main(int argc, char *argv[])
     // TODO Initialization
     // 1. Read the input files.
     FILE *inputFile;
-    char* inputFileName = argv[1];
+    char *inputFileName = argv[1];
     inputFile = fopen(inputFileName, "r"); //Opens file with parameters (path, reading only)
     //Parameters that will be readed from the input file
     int inputFileID;
     int inputFileArrTime;
     int inputFileRunTime;
     int inputFilePriority;
-    const char *pathClk = "/home/ahmed/Desktop/Pro/code/clk.out";
-    const char *pathScheduler = "/home/ahmed/Desktop/Pro/code/scheduler.out";
+    char buf1[500];
+    getcwd(buf1, sizeof(buf1));
+    char buf2[500];
+    getcwd(buf2, sizeof(buf2));
+
+    const char *pathClk = strcat(buf1, "/clk.out");
+    const char *pathScheduler = strcat(buf2, "/scheduler.out");
+
     int send_val;
 
     int count = 0;
