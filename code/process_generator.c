@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     int inputFileArrTime;
     int inputFileRunTime;
     int inputFilePriority;
+    int inputFileMemSize;
     char buf1[500];
     getcwd(buf1, sizeof(buf1));
     char buf2[500];
@@ -71,13 +72,14 @@ int main(int argc, char *argv[])
         else
         {
             inputFileID = c - '0'; //To convert '0' --> 0, '1' --> 1 etc.
-            fscanf(inputFile, "\t%d\t%d\t%d\n", &inputFileArrTime, &inputFileRunTime, &inputFilePriority);
+            fscanf(inputFile, "\t%d\t%d\t%d\t%d\n", &inputFileArrTime, &inputFileRunTime, &inputFilePriority, &inputFileMemSize);
             //process* p = (process*) malloc(sizeof(process));
             process p;
             p.id = inputFileID;
             p.arrivalTime = inputFileArrTime;
             p.runTime = inputFileRunTime;
             p.priority = inputFilePriority;
+            p.memsize = inputFileMemSize;
             fileProcesses[fileProcessesCount++] = p;
         }
         c = fgetc(inputFile);
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
     //NOW we have an array of Processes "fileProcesses" with size "fileProcessesCount" that contains the parameters of each process
     // for (int i = 0; i < fileProcessesCount; i++)
     // {
-    //     printf("%d\t%d\t%d\t%d\n",fileProcesses[i]->id,fileProcesses[i]->arrivalTime,fileProcesses[i]->runTime,fileProcesses[i]->priority);
+    //     printf("%d\t%d\t%d\t%d\t%d\n",fileProcesses[i].id,fileProcesses[i].arrivalTime,fileProcesses[i].runTime,fileProcesses[i].priority,fileProcesses[i].memsize);
     // }
 
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.

@@ -9,14 +9,11 @@ struct msgbuff
 typedef struct OutputLine
 {
     int time;
-    int process;
-    char state[20];
-    int arr;
-    int total;
-    int remain;
-    int wait;
-    int TA;    //turnarount time
-    float WTA; // weighted turnaround time
+    char state[20];     //alocated or running
+    int y;              //size of memory
+    int process;        //process ID
+    int i;              //start memory address
+    int j;              //end memory address
 
 } OutputLine;
 
@@ -44,8 +41,8 @@ void printSchedulerPerf();
 
 int main(int argc, char *argv[])
 {
-    outFile = fopen("scheduler.log", "w");
-    fprintf(outFile, "#At\ttime\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\tk\n");
+    outFile = fopen("memory.log", "w");
+    fprintf(outFile, "%3s\t%4s\t%2s\t%9s\t%3s\t%5s\t%11s\t%2s\t%4s\t%4s\t%2s\t%4s\n","#At","time","x","allocated","y","bytes","for process","z","from","i","to","j");
 
 
     //Setting the path for the processes
@@ -256,7 +253,6 @@ int main(int argc, char *argv[])
         }
     }
     fclose(outFile);
-    printSchedulerPerf();
     //TODO: upon termination release the clock resources.
     destroyClk(false);
     exit(0);
@@ -266,37 +262,21 @@ void printOutputFile(process *ptr)
 {
     OutputLine out;
     out.time = currentClk;
+
+    if ( strcmp(ptr->state,"finished") == 0)    ///then memory is freed
+        strcpy(out.state, "freed");
+    else
+        strcpy(out.state, "allocated");
+    
+    out.y = ptr->memsize;
     out.process = ptr->id;
-    strcpy(out.state, ptr->state);
-    out.arr = ptr->arrivalTime;
-    out.total = ptr->runTime + ptr->WaitingTime;
-    out.remain = ptr->remainingTime;
-    out.wait = ptr->WaitingTime;
+    out.i = ptr->memStartAddr;
+    out.j = ptr->memEndAddr;
 
     char buff[20];
     strcpy(buff, out.state);
-    fprintf(outFile, "At\ttime\t%d\tprocess\t%d\t%s\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d", out.time, out.process, buff, out.arr, out.total, out.remain, out.wait);
+    // fprintf(outFile, "At\ttime\t%d\tprocess\t%d\t%s\tarr\t%d\ttotal\t%d\tremain\t%d\twait\t%d", out.time, out.process, buff, out.arr, out.total, out.remain, out.wait);
+    fprintf(outFile, "%3s\t%4s\t%2d\t%9s\t%3d\t%5s\t%11s\t%2d\t%4s\t%4d\t%2s\t%4d\n","At","time",out.time,buff,out.y,"bytes","for process",out.process,"from",out.i,"to",out.j);
 
-    if (strcmp(out.state, "finished") == 0)
-    {
-        out.TA = (currentClk - out.arr);
-        out.WTA = (float)out.TA / (float)ptr->runTime;
-        avgWTA += out.WTA;
-        avgWaiting += out.wait;
-        fprintf(outFile, "\tTA\t%d\tWTA\t%.2f", out.TA, out.WTA);
-    }
-
-    fprintf(outFile, "\n");
 }
 
-void printSchedulerPerf()
-{
-    FILE *outPerf;
-    outPerf = fopen("scheduler.perf", "w");
-
-    cpuUti = cpuRunTime * 100 / currentClk;
-
-    fprintf(outPerf, "CPU utilization = %.2f%%\nAvg WTA = %.2f\nAvg Waiting = %.2f", cpuUti, avgWTA / k, avgWaiting / k);
-
-    fclose(outPerf);
-}
