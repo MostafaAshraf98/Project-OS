@@ -78,7 +78,7 @@ process* dequeue(PriorityQueue (**q))
    }
    Node *temp = ((*q)->head);
    ((*q)->head) = ((*q)->head)->next;
-   strcpy(temp->p->state,"running");
+   //strcpy(temp->p->state,"running");
    process* returnedProcess = temp->p;
    free(temp);
    return returnedProcess;

@@ -17,7 +17,7 @@ int main(int agrc, char *argv[])
     shmid = shmget(key_id, sizeof(process), IPC_CREAT | 0644);   // create or verify the existence of a shared memory
     process *shmaddr = (process *)shmat(shmid, (process *)0, 0); // attach to shared memory address
 
-    printProcess(shmaddr);
+    // printProcess(shmaddr);
 
     //TODO The process needs to get the remaining time from somewhere
     remainingtime= shmaddr->remainingTime;
@@ -25,14 +25,15 @@ int main(int agrc, char *argv[])
     while (remainingtime > 0)
     {
         currentClk=getClk();
-        if((currentClk - previousClk) == 1 && shmaddr->state=="running")
+        if( (currentClk - previousClk) >= 1 && ( strcmp(shmaddr->state,"started") == 0 || strcmp(shmaddr->state,"resumed") == 0 ) )
         {
             remainingtime--;
             shmaddr->remainingTime-=1;
+            previousClk = getClk();
         }
         // remainingtime = ??;
     }
-
+    
     destroyClk(false);
 
     return 0;
