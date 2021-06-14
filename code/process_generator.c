@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
     // 2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
     int Algorithm = atoi(argv[3]);
-    printf("the number of algorithm: %d\n", Algorithm);
+    // printf("the number of algorithm: %d\n", Algorithm);
     if (Algorithm < 1 || Algorithm > 5)
     {
         printf("error \n");
@@ -100,24 +100,24 @@ int main(int argc, char *argv[])
     if (Algorithm == 5)
         Quantum = atoi(argv[5]);
 
-    switch (Algorithm)
-    {
-    case 1:
-        printf("Scheduled Algorithm is First Come First Serve (FCFS)\n");
-        break;
-    case 2:
-        printf("Scheduled Algorithm is Shortest Job First (SJF)\n");
-        break;
-    case 3:
-        printf("Scheduled Algorithm is Preemptive Highest Priority First (HPF) \n");
-        break;
-    case 4:
-        printf("Scheduled Algorithm is Shortest Remaining Time Next \n");
-        break;
-    case 5:
-        printf("Scheduled Algorithm is Round Robin (RR)\n");
-        break;
-    }
+    // switch (Algorithm)
+    // {
+    // case 1:
+    //     printf("Scheduled Algorithm is First Come First Serve (FCFS)\n");
+    //     break;
+    // case 2:
+    //     printf("Scheduled Algorithm is Shortest Job First (SJF)\n");
+    //     break;
+    // case 3:
+    //     printf("Scheduled Algorithm is Preemptive Highest Priority First (HPF) \n");
+    //     break;
+    // case 4:
+    //     printf("Scheduled Algorithm is Shortest Remaining Time Next \n");
+    //     break;
+    // case 5:
+    //     printf("Scheduled Algorithm is Round Robin (RR)\n");
+    //     break;
+    // }
 
     // 3. Initiate and create the scheduler and clock processes.
 
@@ -127,7 +127,6 @@ int main(int argc, char *argv[])
     else if (clk_Pid == 0) // CLK
     {
         execl(pathClk, "clk.out", NULL);
-        return 2;
     }
 
     int scheduler_Pid = fork();
@@ -161,11 +160,9 @@ int main(int argc, char *argv[])
     msgQ_id = msgget(key_id, 0666 | IPC_CREAT); // creates or verifies the existence of an up queue with this key_id
     if (msgQ_id == -1)
     {
-        printf("there is an error in creating of the message queue\n");
         perror("Error in create");
         exit(-1);
     }
-    printf("the procceses count equals:%d\n", fileProcessesCount);
     while (k != fileProcessesCount)
     {
         const int currentTime = getClk();
@@ -179,8 +176,6 @@ int main(int argc, char *argv[])
             send_val = msgsnd(msgQ_id, &messageToSend, sz, !IPC_NOWAIT);
             if (send_val == -1)
                 perror("Error in send\n");
-            else
-                printf("message sent\n");
             k++;
         }
     }
@@ -193,6 +188,7 @@ int main(int argc, char *argv[])
         int sid = wait(&stat_loc);
     };
     //     // 7. Clear clock resources
+    kill(clk_Pid,SIGKILL);
     destroyClk(true);
 }
 

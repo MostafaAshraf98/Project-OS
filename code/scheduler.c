@@ -27,28 +27,26 @@ struct msgbuff messageToReceive;
 int currentClk;
 int previousClk;
 int k;
-
+int shmid1;
 //For scheduler.perf
 float avgWTA = 0;
 float avgWaiting = 0;
-
+float cpuUti;
+float cpuRunTime = 0;
 FILE *outFile;
 
 void handler(int signum) // THe SIGUSER1 signal handler
 {
-    printf("signal has been sent and scheduler is exiting\n");
     stillSending = false;
 }
 void printOutputFile(process *ptr);
 void printSchedulerPerf();
-
 
 int main(int argc, char *argv[])
 {
     outFile = fopen("scheduler.log", "w");
     fprintf(outFile, "#At\ttime\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\tk\n");
 
-    printf("scheduler is executing\n");
 
     //Setting the path for the processes
     char buf1[500];
@@ -58,9 +56,9 @@ int main(int argc, char *argv[])
     //initializing the clock
     initClk();
     previousClk = getClk();
-
+    cpuRunTime = getClk();
     //array of shared memory addresses with the processes in the scheduler to be able to communicate with them
-    int* arrSharedMemoryIDS = (int*)malloc(sizeof(int));
+    int *arrSharedMemoryIDS = (int *)malloc(sizeof(int));
 
     k = 0; // iterator on the array of Addresses and the array of ids
     int quantumCount;
@@ -105,8 +103,8 @@ int main(int argc, char *argv[])
             //here we want to make a IPC between process and scheduler (using shared memory)
             key_t key_id;
             key_id = ftok("keyfile", secretNumber);
-            shmid = shmget(key_id, sizeof(process), IPC_CREAT | 0644);   // create or verify the existence of a shared memory
-            process *shmaddr = (process *)shmat(shmid, (process *)0, 0); // attach to shared memory address
+            shmid1 = shmget(key_id, sizeof(process), IPC_CREAT | 0644);   // create or verify the existence of a shared memory
+            process *shmaddr1 = (process *)shmat(shmid1, (process *)0, 0); // attach to shared memory address
 
             char buff[100];
             sprintf(buff, "%d", secretNumber);
@@ -122,28 +120,28 @@ int main(int argc, char *argv[])
             }
             secretNumber++; // different secret number for the next process
 
-            strcpy(shmaddr->state, "ready");
-            shmaddr->arrivalTime = p.arrivalTime;
-            shmaddr->id = p.id;
-            shmaddr->WaitingTime = 0;
-            shmaddr->runTime = p.runTime;
-            shmaddr->remainingTime = p.runTime;
+            strcpy(shmaddr1->state, "ready");
+            shmaddr1->arrivalTime = p.arrivalTime;
+            shmaddr1->id = p.id;
+            shmaddr1->WaitingTime = 0;
+            shmaddr1->runTime = p.runTime;
+            shmaddr1->remainingTime = p.runTime;
 
             switch (Algorithm)
             {
             case 1: // FCFS
-                shmaddr->priority = 0;
+                shmaddr1->priority = 0;
                 break;
             case 2: //SJF
-                shmaddr->priority = shmaddr->runTime;
+                shmaddr1->priority = shmaddr1->runTime;
                 break;
             case 3: //HptrRecProF   preemptive
                 break;
             case 4: //SRTN          preemptive
-                shmaddr->priority = shmaddr->remainingTime;
+                shmaddr1->priority = shmaddr1->remainingTime;
                 break;
             case 5: //RR            preemptive
-                shmaddr->priority = 0;
+                shmaddr1->priority = 0;
                 break;
             }
 
@@ -152,55 +150,55 @@ int main(int argc, char *argv[])
                 switch (Algorithm) // based on algorithm we will decide what happens to the process in running
                 {
                 case 3:
-                    if (shmaddr->priority < pointerToRunningProcess->priority)
+                    if (shmaddr1->priority < pointerToRunningProcess->priority)
                     {
                         strcpy(pointerToRunningProcess->state, "stopped");
                         printOutputFile(pointerToRunningProcess);
                         enqueue(&pq, pointerToRunningProcess);
 
-                        pointerToRunningProcess = shmaddr;
+                        pointerToRunningProcess = shmaddr1;
                         strcpy(pointerToRunningProcess->state, "started");
                         printOutputFile(pointerToRunningProcess);
                     }
                     else
                     {
                         //Adding the process to the queue
-                        enqueue(&pq, shmaddr); // the process is added to the ready queue
+                        enqueue(&pq, shmaddr1); // the process is added to the ready queue
                     }
                     break;
                 case 4:
-                    if (shmaddr->runTime < pointerToRunningProcess->remainingTime)
+                    if (shmaddr1->runTime < pointerToRunningProcess->remainingTime)
                     {
                         strcpy(pointerToRunningProcess->state, "stopped");
                         printOutputFile(pointerToRunningProcess);
                         enqueue(&pq, pointerToRunningProcess);
 
-                        pointerToRunningProcess = shmaddr;
+                        pointerToRunningProcess = shmaddr1;
                         strcpy(pointerToRunningProcess->state, "started"); //////////////////////////////////////
                         printOutputFile(pointerToRunningProcess);
                     }
                     else
                     {
                         //Adding the process to the queue
-                        enqueue(&pq, shmaddr); // the process is added to the ready queue
+                        enqueue(&pq, shmaddr1); // the process is added to the ready queue
                     }
                     break;
                 default:
-                    enqueue(&pq, shmaddr); // the process is added to the ready queue
+                    enqueue(&pq, shmaddr1); // the process is added to the ready queue
                     break;
                 }
             }
             else
             {
-                enqueue(&pq, shmaddr); // the process is added to the ready queue
+                enqueue(&pq, shmaddr1); // the process is added to the ready queue
             }
             // printf("============Printing Queue \n");
             // printQueue(&pq);
-            //enqueue(&pq, shmaddr); // the process is added to the ready queue
+            //enqueue(&pq, shmaddr1); // the process is added to the ready queue
 
             //we need to put the address of the pocess in the shared memory address
             //so that this address points to the process
-            arrSharedMemoryIDS[k] = shmid;
+            arrSharedMemoryIDS[k] = shmid1;
             k++;
         }
         if (pointerToRunningProcess == NULL && !isEmpty(&pq)) // if there is not a running process
@@ -217,6 +215,7 @@ int main(int argc, char *argv[])
         }
         if ((currentClk - previousClk) >= 1 && (pointerToRunningProcess != NULL)) // There is a running a running process and a second has passed
         {
+            cpuRunTime += (currentClk - previousClk); //a clock has passed and there is a running process
             incrementWaintingTime(&pq);
 
             if (Algorithm == 5 && pointerToRunningProcess->remainingTime != 0)
@@ -240,14 +239,12 @@ int main(int argc, char *argv[])
                 }
             }
 
-            printf("============================ID = %d\tProcess Remaining time %d\n", pointerToRunningProcess->id, pointerToRunningProcess->remainingTime);
             if (pointerToRunningProcess->remainingTime == 0)
             {
-                printf("============================Process finished %d\n", pointerToRunningProcess->id);
                 strcpy(pointerToRunningProcess->state, "finished");
-                int idToremove = pointerToRunningProcess->id;
-                shmctl(idToremove, IPC_RMID, (struct shmid_ds *)0);
                 printOutputFile(pointerToRunningProcess);
+                int idToremove = pointerToRunningProcess->priority;
+                shmctl(idToremove, IPC_RMID, (struct shmid_ds *)0);
                 pointerToRunningProcess = NULL;
                 if (Algorithm == 5)
                 {
@@ -258,11 +255,10 @@ int main(int argc, char *argv[])
             previousClk = getClk();
         }
     }
-    printf("scheduler exited the while loop\n");
     fclose(outFile);
     printSchedulerPerf();
     //TODO: upon termination release the clock resources.
-    destroyClk(true);
+    destroyClk(false);
     exit(0);
 }
 
@@ -294,13 +290,13 @@ void printOutputFile(process *ptr)
 }
 
 void printSchedulerPerf()
-{   
-    FILE * outPerf;
-    outPerf = fopen("scheduler.perf","w");
+{
+    FILE *outPerf;
+    outPerf = fopen("scheduler.perf", "w");
 
-    fprintf(outPerf,"CPU utilization = %.2f%%\nAvg WTA = %.2f\nAvg Waiting = %.2f",100.0, avgWTA/k, avgWaiting/k);
+    cpuUti = cpuRunTime * 100 / currentClk;
+
+    fprintf(outPerf, "CPU utilization = %.2f%%\nAvg WTA = %.2f\nAvg Waiting = %.2f", cpuUti, avgWTA / k, avgWaiting / k);
 
     fclose(outPerf);
 }
-
-
