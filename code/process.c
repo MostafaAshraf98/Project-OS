@@ -10,7 +10,7 @@ int main(int agrc, char *argv[])
     printf("process is running\n");
 
     initClk();
-    previousClk=getClk();
+    previousClk = getClk();
     key_t key_id;
     int secretNumber = atoi(argv[1]);
     key_id = ftok("keyfile", secretNumber);
@@ -20,21 +20,20 @@ int main(int agrc, char *argv[])
     // printProcess(shmaddr);
 
     //TODO The process needs to get the remaining time from somewhere
-    remainingtime= shmaddr->remainingTime;
-    
+    remainingtime = shmaddr->remainingTime;
+
     while (remainingtime > 0)
     {
-        currentClk=getClk();
-        if( (currentClk - previousClk) >= 1 && ( strcmp(shmaddr->state,"started") == 0 || strcmp(shmaddr->state,"resumed") == 0 ) )
+        currentClk = getClk();
+        if ((currentClk - previousClk) >= 1 && (strcmp(shmaddr->state, "started") == 0 || strcmp(shmaddr->state, "resumed") == 0))
         {
             remainingtime--;
-            shmaddr->remainingTime-=1;
+            shmaddr->remainingTime -= 1;
             previousClk = getClk();
         }
-        // remainingtime = ??;
     }
-    
+    shmaddr->id=shmid; // this is done to share the id with the scheduler
     destroyClk(false);
-
+    exit(0);
     return 0;
 }

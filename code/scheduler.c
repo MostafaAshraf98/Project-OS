@@ -28,12 +28,6 @@ int currentClk;
 int previousClk;
 
 FILE *outFile;
-//======================ARRAY OF RECEIVED PROCESSES (A COPY  OF THEM)=====================
-void addProcessToArr(process *p1);
-//Array of received process
-process *arrProcesses;
-int arrProSize;
-//=================================================
 
 void handler(int signum) // THe SIGUSER1 signal handler
 {
@@ -45,8 +39,7 @@ void printOutputFile(process *ptr);
 int main(int argc, char *argv[])
 {
     outFile = fopen("scheduler.log", "w");
-    fprintf(outFile, "#At\ttime\tx\tprocess\ty\tstate\t\tarr\tw\ttotal\tz\tremain\ty\twait\tk\n");
-    
+    fprintf(outFile, "#At\ttime\tx\tprocess\ty\tstate\tarr\tw\ttotal\tz\tremain\ty\twait\tk\n");
 
     printf("scheduler is executing\n");
 
@@ -60,10 +53,8 @@ int main(int argc, char *argv[])
     previousClk = getClk();
 
     //array of shared memory addresses with the processes in the scheduler to be able to communicate with them
-    process **arrSharedMemoryAdresses = (process **)malloc(sizeof(process *));
+    int* arrSharedMemoryIDS = (int*)malloc(sizeof(int));
 
-    //array of process ids (not the ones of forking but the ones in the input file) to be able to identify which processes we are addressing to when we get the shared memory
-    int *arrPIDS = (int *)malloc(sizeof(int));
     int k = 0; // iterator on the array of Addresses and the array of ids
     int quantumCount;
 
@@ -201,17 +192,16 @@ int main(int argc, char *argv[])
             // printf("============Printing Queue \n");
             // printQueue(&pq);
             //enqueue(&pq, shmaddr); // the process is added to the ready queue
-            arrPIDS[k] = shmaddr->id; // We add the id of the recevied process to the array of process ids
 
             //we need to put the address of the pocess in the shared memory address
             //so that this address points to the process
-            arrSharedMemoryAdresses[k] = shmaddr;
+            arrSharedMemoryIDS[k] = shmid;
             k++;
         }
         if (pointerToRunningProcess == NULL && !isEmpty(&pq)) // if there is not a running process
         {
             pointerToRunningProcess = dequeue(&pq);
-            if ( strcmp(pointerToRunningProcess->state, "ready") == 0 )
+            if (strcmp(pointerToRunningProcess->state, "ready") == 0)
                 strcpy(pointerToRunningProcess->state, "started");
             else
                 strcpy(pointerToRunningProcess->state, "resumed");
@@ -250,6 +240,8 @@ int main(int argc, char *argv[])
             {
                 printf("============================Process finished %d\n", pointerToRunningProcess->id);
                 strcpy(pointerToRunningProcess->state, "finished");
+                int idToremove = pointerToRunningProcess->id;
+                shmctl(idToremove, IPC_RMID, (struct shmid_ds *)0);
                 printOutputFile(pointerToRunningProcess);
                 pointerToRunningProcess = NULL;
                 if (Algorithm == 5)
@@ -292,18 +284,3 @@ void printOutputFile(process *ptr)
 
     fprintf(outFile, "\n");
 }
-
-// void addProcessToArr(process *p1)
-// {
-//     arrProSize++;
-//     arrProcesses = (process *)realloc(arrProcesses, arrProSize * sizeof(process));
-//     arrProSize--;
-//     arrProcesses[arrProSize].id = p1->id;
-//     arrProcesses[arrProSize].arrivalTime = p1->arrivalTime;
-//     arrProcesses[arrProSize].priority = p1->priority;
-//     arrProcesses[arrProSize].remainingTime = p1->remainingTime;
-//     arrProcesses[arrProSize].runTime = p1->runTime;
-//     arrProcesses[arrProSize].WaitingTime = p1->WaitingTime;
-//     strcpy(arrProcesses[arrProSize].state, p1->state);
-//     arrProSize++;
-// }
