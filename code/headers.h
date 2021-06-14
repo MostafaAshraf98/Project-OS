@@ -11,7 +11,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include "PriorityQueue.h"
+#include "LinkedList.h"
 #include <string.h>
+#include "Structs.h"
 
 typedef short bool;
 #define true 1
@@ -53,18 +55,6 @@ void initClk()
  * Input: terminateAll: a flag to indicate whether that this is the end of simulation.
  *                      It terminates the whole system and releases resources.
 */
-
-typedef struct process
-{
-   char state[20];
-   int id;
-   int arrivalTime;
-   int priority;
-   int runTime;
-   int remainingTime;
-   int WaitingTime;
-   int memsize;
-} process;
 
 
 void destroyClk(bool terminateAll)

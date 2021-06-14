@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Structs.h"
 // priority Node
 
 
@@ -16,11 +17,7 @@ void printProcess(process* p)
    printf("Waiting time is: %d\n\n", p->WaitingTime);
 }
 
-typedef struct node
-{
-   process* p;
-   struct node *next;
-} Node;
+
 
 typedef struct PriorityQueue
 {
