@@ -54,6 +54,19 @@ void initClk()
  *                      It terminates the whole system and releases resources.
 */
 
+typedef struct process
+{
+   char state[20];
+   int id;
+   int arrivalTime;
+   int priority;
+   int runTime;
+   int remainingTime;
+   int WaitingTime;
+   int memsize;
+} process;
+
+
 void destroyClk(bool terminateAll)
 {
     shmdt(shmaddr);

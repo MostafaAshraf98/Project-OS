@@ -4,16 +4,6 @@
 #include <string.h>
 // priority Node
 
-typedef struct process
-{
-   char state[20];
-   int id;
-   int arrivalTime;
-   int priority;
-   int runTime;
-   int remainingTime;
-   int WaitingTime;
-} process;
 
 void printProcess(process* p)
 {
