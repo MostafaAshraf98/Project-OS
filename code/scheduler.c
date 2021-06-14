@@ -26,6 +26,11 @@ int Quantum;
 struct msgbuff messageToReceive;
 int currentClk;
 int previousClk;
+int k;
+
+//For scheduler.perf
+float avgWTA = 0;
+float avgWaiting = 0;
 
 FILE *outFile;
 
@@ -35,6 +40,8 @@ void handler(int signum) // THe SIGUSER1 signal handler
     stillSending = false;
 }
 void printOutputFile(process *ptr);
+void printSchedulerPerf();
+
 
 int main(int argc, char *argv[])
 {
@@ -55,7 +62,7 @@ int main(int argc, char *argv[])
     //array of shared memory addresses with the processes in the scheduler to be able to communicate with them
     int* arrSharedMemoryIDS = (int*)malloc(sizeof(int));
 
-    int k = 0; // iterator on the array of Addresses and the array of ids
+    k = 0; // iterator on the array of Addresses and the array of ids
     int quantumCount;
 
     signal(SIGUSR1, handler);
@@ -95,8 +102,6 @@ int main(int argc, char *argv[])
         strcpy(p.state, messageToReceive.p.state);
         if (rec_val != -1) // if the shcedule did receive a new process successfully
         {
-            printf("received message\n");
-
             //here we want to make a IPC between process and scheduler (using shared memory)
             key_t key_id;
             key_id = ftok("keyfile", secretNumber);
@@ -255,8 +260,9 @@ int main(int argc, char *argv[])
     }
     printf("scheduler exited the while loop\n");
     fclose(outFile);
+    printSchedulerPerf();
     //TODO: upon termination release the clock resources.
-    destroyClk(false);
+    destroyClk(true);
     exit(0);
 }
 
@@ -279,8 +285,22 @@ void printOutputFile(process *ptr)
     {
         out.TA = (currentClk - out.arr);
         out.WTA = (float)out.TA / (float)ptr->runTime;
+        avgWTA += out.WTA;
+        avgWaiting += out.wait;
         fprintf(outFile, "\tTA\t%d\tWTA\t%.2f", out.TA, out.WTA);
     }
 
     fprintf(outFile, "\n");
 }
+
+void printSchedulerPerf()
+{   
+    FILE * outPerf;
+    outPerf = fopen("scheduler.perf","w");
+
+    fprintf(outPerf,"CPU utilization = %.2f%%\nAvg WTA = %.2f\nAvg Waiting = %.2f",100.0, avgWTA/k, avgWaiting/k);
+
+    fclose(outPerf);
+}
+
+
