@@ -99,18 +99,18 @@ int main(int argc, char *argv[])
     //the condition that the scheduer continue scheduling the process
     //this condition only breaks if the process generator send the signal SIGUSR1 that it has sent all the processes
     //in addition to the other condition that there still a running process or processes in the queue
-    while (stillSending || pointerToRunningProcess != NULL || !isEmpty(&pq) )       //|| !isEmptyWait(&waitLinkedList)
+    while (stillSending || pointerToRunningProcess != NULL || !isEmpty(&pq)) //|| !isEmptyWait(&waitLinkedList)
     {
-        
+
         currentClk = getClk(); // with each iteration i get the current clock
-        
+
         size_t sz = sizeof(struct msgbuff) - sizeof(long);               // the size of the message sent on the message queue
         rec_val = msgrcv(msgQ_id, &messageToReceive, sz, 0, IPC_NOWAIT); // receives messages with any mtype
         process p = messageToReceive.p;
         strcpy(p.state, messageToReceive.p.state);
         if (rec_val != -1) // if the shcedule did receive a new process successfully
         {
-            printf("Received===================\n");
+            // printf("Received===================\n");
             tryMemPush(&p);
             // printf("============Printing Queue \n");
             // printQueue(&pq);
@@ -123,11 +123,11 @@ int main(int argc, char *argv[])
         {
             pointerToRunningProcess = dequeue(&pq);
             if (strcmp(pointerToRunningProcess->state, "ready") == 0)
+            {
                 strcpy(pointerToRunningProcess->state, "started");
+            }
             else
                 strcpy(pointerToRunningProcess->state, "resumed");
-
-            printOutputFile(pointerToRunningProcess);
 
             previousClk = getClk();
         }
@@ -143,7 +143,6 @@ int main(int argc, char *argv[])
                 if (quantumCount == 0)
                 {
                     strcpy(pointerToRunningProcess->state, "stopped");
-                    printOutputFile(pointerToRunningProcess);
                     enqueue(&pq, pointerToRunningProcess);
 
                     pointerToRunningProcess = dequeue(&pq);
@@ -152,8 +151,6 @@ int main(int argc, char *argv[])
                     else
                         strcpy(pointerToRunningProcess->state, "resumed");
 
-                    printOutputFile(pointerToRunningProcess);
-
                     quantumCount = Quantum;
                 }
             }
@@ -161,31 +158,33 @@ int main(int argc, char *argv[])
             if (pointerToRunningProcess->remainingTime == 0)
             {
                 strcpy(pointerToRunningProcess->state, "finished");
-                printf("Finished and free===================\n");
-                
-                Node* ptr1 = waitLinkedList->head;
-                Node* prev = NULL;
-                // while ( ptr1 != NULL)
-                // {
-                //     if ( tryMemPush(ptr1->p) )
-                //     {
-                //         if ( prev == NULL)
-                //         {
-                //             waitLinkedList->head = ptr1->next;
+                // printf("Finished and free===================\n");
 
-                //         }
-                //         else
-                //         {
-                //             prev->next = ptr1->next;
-                //         }
-                //     }
-                //     ptr1 = ptr1->next;
-                // }
+                Node *ptr1 = waitLinkedList->head;
+                Node *prev = NULL;
+                while ( ptr1 != NULL)
+                {
+                    if ( tryMemPush(ptr1->p) )
+                    {
+                        if ( prev == NULL)
+                        {
+                            waitLinkedList->head = ptr1->next;
+
+                        }
+                        else
+                        {
+                            prev->next = ptr1->next;
+                        }
+                    }
+                    prev = ptr1;
+                    ptr1 = ptr1->next;
+                }
                 printOutputFile(pointerToRunningProcess);
                 int idToremove = pointerToRunningProcess->priority;
                 shmctl(idToremove, IPC_RMID, (struct shmid_ds *)0);
+                // printf("SHmid removed = %d\n",idToremove);
                 freeMem(&memLinkedList, pointerToRunningProcess);
-                printf("===========FreeMemFinished======================\n");
+                // printf("===========FreeMemFinished======================\n");
                 pointerToRunningProcess = NULL;
                 if (Algorithm == 5)
                 {
@@ -229,6 +228,7 @@ bool tryMemPush(process *p)
     key_t key_id;
     key_id = ftok("keyfile", secretNumber);
     shmid1 = shmget(key_id, sizeof(process), IPC_CREAT | 0644);    // create or verify the existence of a shared memory
+    //printf("========ID created = %d\n",shmid1);
     process *shmaddr1 = (process *)shmat(shmid1, (process *)0, 0); // attach to shared memory address
 
     strcpy(shmaddr1->state, "ready");
@@ -244,10 +244,10 @@ bool tryMemPush(process *p)
     {
         shmctl(shmid1, IPC_RMID, (struct shmid_ds *)0);
         push(&waitLinkedList, p);
-        printf("trymempush false===================\n");
-        printf("=========================================================\n");
-        printMemLinkedList(&memLinkedList);
-        printf("============================================================\n");
+        // printf("trymempush false===================\n");
+        // printf("=========================================================\n");
+        // printMemLinkedList(&memLinkedList);
+        // printf("============================================================\n");
         return false;
     }
     else
@@ -292,12 +292,11 @@ bool tryMemPush(process *p)
                 if (shmaddr1->priority < pointerToRunningProcess->priority)
                 {
                     strcpy(pointerToRunningProcess->state, "stopped");
-                    printOutputFile(pointerToRunningProcess);
+
                     enqueue(&pq, pointerToRunningProcess);
 
                     pointerToRunningProcess = shmaddr1;
                     strcpy(pointerToRunningProcess->state, "started");
-                    printOutputFile(pointerToRunningProcess);
                 }
                 else
                 {
@@ -309,12 +308,11 @@ bool tryMemPush(process *p)
                 if (shmaddr1->runTime < pointerToRunningProcess->remainingTime)
                 {
                     strcpy(pointerToRunningProcess->state, "stopped");
-                    printOutputFile(pointerToRunningProcess);
+
                     enqueue(&pq, pointerToRunningProcess);
 
                     pointerToRunningProcess = shmaddr1;
                     strcpy(pointerToRunningProcess->state, "started"); //////////////////////////////////////
-                    printOutputFile(pointerToRunningProcess);
                 }
                 else
                 {
@@ -331,11 +329,11 @@ bool tryMemPush(process *p)
         {
             enqueue(&pq, shmaddr1); // the process is added to the ready queue
         }
-        printf("trymempush true===================\n");
-
-        printf("=========================================================\n");
-        printMemLinkedList(&memLinkedList);
-        printf("============================================================\n");
+        // printf("trymempush true===================\n");
+        printOutputFile(shmaddr1);
+        // printf("=========================================================\n");
+        // printMemLinkedList(&memLinkedList);
+        // printf("============================================================\n");
         return true;
     }
 }

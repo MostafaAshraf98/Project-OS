@@ -199,6 +199,7 @@ void clearResources(int signum)
 {
     //TODO Clears all resources in case of interruption
     msgctl(msgQ_id, IPC_RMID, (struct msqid_ds *)0);
+    printf("Clearing resources called\n");
     killpg(getpgrp(), SIGKILL);
     destroyClk(true);
 }
