@@ -31,6 +31,8 @@ float avgWaiting = 0;
 float cpuUti;
 float cpuRunTime = 0;
 FILE *outFile;
+MemLinkedList* memLinkedList;
+WaitingLinkedList* waitLinkedList;
 
 void handler(int signum) // THe SIGUSER1 signal handler
 {
@@ -62,6 +64,9 @@ int main(int argc, char *argv[])
 
     signal(SIGUSR1, handler);
 
+    memLinkedList = newMemLinkedList();
+    waitLinkedList = newWaitingLinkedList();
+    
     //seeting the received arguments from the process generator ( which algorithm and the quantum value in case of RR)
     Algorithm = atoi(argv[1]);
     if (Algorithm == 5) // if RR

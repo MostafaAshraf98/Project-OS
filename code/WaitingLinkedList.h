@@ -21,14 +21,14 @@ WaitingLinkedList *newWaitingLinkedList()
     return temp;
 }
 
-int isEmpty(WaitingLinkedList **q)
+int isEmptyWait(WaitingLinkedList **q)
 {
     return (*q)->head == NULL;
 }
 
-process *front(WaitingLinkedList **q)
+process *frontWait(WaitingLinkedList **q)
 {
-    if (isEmpty(q))
+    if (isEmptyWait(q))
     {
         process *p = NULL;
         return p;
@@ -38,7 +38,7 @@ process *front(WaitingLinkedList **q)
 
 process *pop(WaitingLinkedList(**q))
 {
-    if (isEmpty(q))
+    if (isEmptyWait(q))
     {
         process *p = NULL;
         return p;
@@ -52,7 +52,7 @@ process *pop(WaitingLinkedList(**q))
 
 void push(WaitingLinkedList **q, process *p)
 {
-    if (isEmpty(q))
+    if (isEmptyWait(q))
     {
         Node *temp = newNode(p);
         ((*q)->head) = temp;
@@ -70,7 +70,7 @@ void push(WaitingLinkedList **q, process *p)
 
 void printLinkedList(WaitingLinkedList **q)
 {
-    if (isEmpty(q))
+    if (isEmptyWait(q))
         return;
     Node *start = ((*q)->head);
     printProcess(start->p);
