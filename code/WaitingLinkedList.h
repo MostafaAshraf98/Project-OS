@@ -81,7 +81,18 @@ void printLinkedList(WaitingLinkedList **q)
     }
 }
 
-
+void incrementWaintingTimeWait(WaitingLinkedList **q)
+{
+   if (isEmptyWait(q))
+      return;
+   Node *start = ((*q)->head);
+   start->p->WaitingTime++;
+   while (start->next != NULL)
+   {
+      start->next->p->WaitingTime++;
+      start = start->next;
+   }
+}
 
 // int main()
 // {

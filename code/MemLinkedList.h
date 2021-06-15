@@ -82,15 +82,21 @@ void freeMem(MemLinkedList(**q), process* p)
                 int newSize = previousNode->size + startNode->size;
                 previousNode->next = startNode->next;
                 previousNode->size = newSize;
-                free(startNode);
+                //startNode = NULL;
+                //free(startNode);
             }
-            if ( startNode->next != NULL && startNode->next->p == NULL )
+            else if ( previousNode == NULL )
+            {
+                (*q)->head = startNode->next;
+            }
+            else if ( startNode->next != NULL && startNode->next->p == NULL )
             {
                 int newSize = startNode->size + startNode->next->size;
                 memoryNode* temp = startNode->next;
                 startNode->next = temp->next;
                 startNode->size = newSize;
-                free(temp);
+                //temp = NULL;
+                //free(temp);
             }
 
             return;

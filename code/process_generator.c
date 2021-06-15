@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
             p.runTime = inputFileRunTime;
             p.priority = inputFilePriority;
             p.memsize = inputFileMemSize;
+            p.WaitingTime = 0;
             fileProcesses[fileProcessesCount++] = p;
         }
         c = fgetc(inputFile);
@@ -138,11 +139,11 @@ int main(int argc, char *argv[])
     {
         if (Algorithm != 5)
         {
-            execl(pathScheduler, "scheduler.out", argv[3], NULL);
+            execl(pathScheduler, "scheduler.out", argv[3], argv[5], NULL);
         }
         else
         {
-            execl(pathScheduler, "scheduler.out", argv[3], argv[5], NULL);
+            execl(pathScheduler, "scheduler.out", argv[3], argv[5], argv[7], NULL);
         }
     }
 
