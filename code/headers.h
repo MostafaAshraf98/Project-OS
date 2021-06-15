@@ -10,10 +10,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include "PriorityQueue.h"
-#include "LinkedList.h"
 #include <string.h>
+#include "PriorityQueue.h"
 #include "Structs.h"
+#include "WaitingLinkedList.h"
+#include "MemLinkedList.h"
 
 typedef short bool;
 #define true 1

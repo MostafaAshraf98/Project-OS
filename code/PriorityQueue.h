@@ -6,19 +6,6 @@
 // priority Node
 
 
-void printProcess(process* p)
-{
-   printf("id is: %d\n", p->id);
-   printf("prioriry is: %d\n", p->priority);
-   printf("state is: %s\n", p->state);
-   printf("arrival times is: %d\n", p->arrivalTime);
-   printf("runTime is: %d\n", p->runTime);
-   printf("remaining time is: %d\n", p->remainingTime);
-   printf("Waiting time is: %d\n\n", p->WaitingTime);
-}
-
-
-
 typedef struct PriorityQueue
 {
    Node *head;
@@ -30,14 +17,6 @@ PriorityQueue *newPriorityQueue()
    PriorityQueue *temp = (PriorityQueue *)malloc((sizeof(PriorityQueue)));
    (temp->head) = NULL;
    temp->count = 0;
-   return temp;
-}
-
-Node *newNode(process* p)
-{
-   Node *temp = (Node *)malloc(sizeof(Node));
-   temp->p = p;
-   temp->next = NULL;
    return temp;
 }
 
