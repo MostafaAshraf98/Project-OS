@@ -1,6 +1,6 @@
-#pragma once
+//#pragma once
 // #include "headers.h"
-#include <stdio.h> 
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -47,34 +47,58 @@ MemLinkedList *newMemLinkedList()
     return temp;
 }
 
-int isEmpty(MemLinkedList **q)
-{
-    return (*q)->head == NULL;
-}
+// int isEmpty(MemLinkedList **q)
+// {
+//     return (*q)->head == NULL;
+// }
 
-process *front(MemLinkedList **q)
-{
-    if (isEmpty(q))
-    {
-        process *p = NULL;
-        return p;
-    }
-    return ((*q)->head->p);
-}
+// process *front(MemLinkedList **q)
+// {
+//     if (isEmpty(q))
+//     {
+//         process *p = NULL;
+//         return p;
+//     }
+//     return ((*q)->head->p);
+// }
 
-process *pop(MemLinkedList(**q))
+void freeMem(MemLinkedList(**q), process* p)
 {
-    if (isEmpty(q))
+    if ( (*q) == NULL)
     {
-        process *p = NULL;
-        return p;
+        memoryNode *m = NULL;
+        return;
     }
-    memoryNode *temp = ((*q)->head);
-    ((*q)->head) = ((*q)->head)->next;
-    process *returnedProcess = temp->p;
-    free(temp);
-    (*q)->count--;
-    return returnedProcess;
+    memoryNode* startNode = (*q)->head;
+    memoryNode* previousNode = NULL;
+    while ( startNode != NULL )
+    {
+        if ( startNode->p->id == p->id )
+        {
+            startNode->p = NULL;
+
+            if ( previousNode != NULL && previousNode->p == NULL)
+            {  
+                int newSize = previousNode->size + startNode->size;
+                previousNode->next = startNode->next;
+                previousNode->size = newSize;
+                free(startNode);
+            }
+            if ( startNode->next != NULL && startNode->next->p == NULL )
+            {
+                int newSize = startNode->size + startNode->next->size;
+                memoryNode* temp = startNode->next;
+                startNode->next = temp->next;
+                startNode->size = newSize;
+                free(temp);
+            }
+
+            return;
+        }
+
+        previousNode = startNode;
+        startNode = startNode->next;
+    }
 }
 
 bool pushMem(MemLinkedList **q, process *p, int algorithm)
@@ -94,6 +118,7 @@ bool pushMem(MemLinkedList **q, process *p, int algorithm)
 
     memoryNode *chosenNode = NULL;
     memoryNode *previousNode = NULL;
+    memoryNode* prevs = NULL;
 
     switch (algorithm)
     {
@@ -183,10 +208,15 @@ bool pushMem(MemLinkedList **q, process *p, int algorithm)
             if (startNode->p == NULL && startNode->size >= size) // if start node is not allocated and its size is greater than the required size
             {
                 if (chosenNode == NULL || chosenNode->size > startNode->size)
+                {
                     chosenNode = startNode;
+                }
             }
-            if (chosenNode != startNode)
-                previousNode = startNode;
+            if ( chosenNode == startNode )
+            {
+                previousNode = prevs;
+            }
+            prevs = startNode;
             startNode = startNode->next;
         }
         if (chosenNode == NULL)
@@ -229,11 +259,11 @@ void printMemLinkedList(MemLinkedList **q)
     }
 }
 
-void assignMemNode(memoryNode *N1, memoryNode *N2)
-{
-    if (N2->next != NULL)
-        N1->next = N2->next;
-}
+// void assignMemNode(memoryNode *N1, memoryNode *N2)
+// {
+//     if (N2->next != NULL)
+//         N1->next = N2->next;
+// }
 
 // int main()
 // {
@@ -270,10 +300,26 @@ void assignMemNode(memoryNode *N1, memoryNode *N2)
 //     p3->WaitingTime = 64;
 //     p3->memsize = 40;
 
+
+//     process *p4;
+//     p4 = (process *)malloc(sizeof(process));
+//     strcpy(p1->state, "running");
+//     p4->priority = 0;
+//     p4->id = 4;
+//     p4->arrivalTime = 11;
+//     p4->remainingTime = 31;
+//     p4->runTime = 12;
+//     p4->WaitingTime = 64;
+//     p4->memsize = 5;
+
 //     MemLinkedList *pq = newMemLinkedList();
-//     pushMem(&pq, p1, 2);
-//     pushMem(&pq, p2, 2);
-//     pushMem(&pq, p3, 2);
+//     pushMem(&pq, p1, 3);
+//     pushMem(&pq, p2, 3);
+//     pushMem(&pq, p3, 3);
+//     //printMemLinkedList(&pq);
+//     freeMem(&pq,p2);
+//     pushMem(&pq, p4, 3);
+//     printf("======================================\n");
 //     printMemLinkedList(&pq);
 //     return 0;
 // }
