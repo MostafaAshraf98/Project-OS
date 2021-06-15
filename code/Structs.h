@@ -12,6 +12,8 @@ typedef struct process
    int remainingTime;
    int WaitingTime;
    int memsize;
+   int memStartAddr;
+   int memEndAddr;
 } process;
 
 typedef struct node
